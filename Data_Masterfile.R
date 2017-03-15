@@ -17,7 +17,7 @@ all_data_df = all_data_df[-del_rows,]
 
 # Clear redundant first column 'Rk'
 all_data_df$Rk = NULL
-all_data_df$` ` = NULL
+all_data_df$`Â ` = NULL
 
 # Renaming columns to more clear entries for manipulation. See README for definitions.
 colnames(all_data_df) = c('school', 'gp', 'wins', 'loss', 'wlp', 'srs', 'sos', 'conf_wins',
@@ -30,28 +30,30 @@ colnames(all_data_df) = c('school', 'gp', 'wins', 'loss', 'wlp', 'srs', 'sos', '
 library(dplyr)
 all_data_df = mutate(all_data_df, twop = fg - thrp, twopa = fga - thrpa, twopp = twop / twopa)
 
+all_data_df[109,13] = 1
+
 # Generate the names of the teams in each bracket. In order 1-16 seed.
-midwest = c('Kansas', 'Louisville', 'UCLA', 'Purdue', 'Virginia', "Saint Mary's (CA)", 
-            'Oklahoma State', 'Wichita State', 'Virginia Commonwealth', 'Providence', 
-            'Vanderbilt', 'Nevada', 'Akron', 'Cal State Bakersfield', 'Northern Kentucky', 
-            'North Dakota')
-east = c('Villanova', 'Baylor', 'Florida State', 'Florida', 'Notre Dame', 'Wisconsin', 
-         'Maryland', 'Miami (FL)', 'Michigan', 'Seton Hall', 'Middle Tennessee', 
-         'North Carolina-Wilmington', 'Bucknell', 'Winthrop', 'South Dakota', 'North Carolina Central')
-west = c('Gonzaga', 'Oregon', 'Butler', 'Duke', 'Southern Methodist', 'Iowa State', 'South Carolina', 
-         'Virginia Tech', 'Northwestern', 'Marquette', 'Wake Forest', 'Southern California', 
-         'Princeton', 'Florida Gulf Coast', 'UC-Irvine', 'Texas Southern')
-south = c('North Carolina', 'Kentucky', 'Arizona', 'West Virginia', 'Cincinnati', 'Minnesota', 
-          'Creighton', 'Dayton', 'Arkansas', 'Michigan State', 'Syracuse', 'Texas-Arlington', 'Vermont', 
-          'North Carolina-Greensboro', 'Iona', 'Jacksonville State')
+midwest = c('Kansas', 'Louisville', 'Oregon', 'Purdue', 'Iowa State', "Creighton", 
+            'Michigan', 'Miami (FL)', 'Michigan State', 'Oklahoma State', 
+            'Rhode Island', 'Nevada', 'Vermont', 'Iona', 'Jacksonville State', 
+            'UC-Davis')
+east = c('Villanova', 'Duke', 'Baylor', 'Florida', 'Virginia', 'Southern Methodist', 
+         'South Carolina', 'Wisconsin', 'Virginia Tech', 'Marquette', 'Southern California', 
+         'North Carolina-Wilmington', 'East Tennessee State', 'New Mexico State', 'Troy', "Mount St. Mary's")
+west = c('Gonzaga', 'Arizona', 'Florida State', 'West Virginia', 'Notre Dame', 'Maryland', "Saint Mary's (CA)", 
+         'Northwestern', 'Vanderbilt', 'Virginia Commonwealth', 'Xavier', 'Princeton', 
+         'Bucknell', 'Florida Gulf Coast', 'North Dakota', 'South Dakota State')
+south = c('North Carolina', 'Kentucky', 'UCLA', 'Butler', 'Minnesota', 'Cincinnati', 
+          'Dayton', 'Arkansas', 'Seton Hall', 'Wichita State', 'Kansas State', 'Middle Tennessee', 
+          'Winthrop', 'Kent State', 'Northern Kentucky', 'Texas Southern')
 
 # Combine bracket teams in order, 1-4 seeds as 1 seeds.
-teams = c(midwest, east, west, south)
+teams = c(east, midwest, west, south)
 
 # Choose which rows to save from large, original data set.
 save_row = matrix(NA, nrow = 1, ncol = 64)
 for (x in 1:length(teams)) {
-  save_row[x] = which(all_data_df$school == teams[x])
+  save_row[x] = which(all_data_df$school == paste(teams[x],'*'))
 }
 
 # Keep data fromonly desired teams/rows.
@@ -79,7 +81,7 @@ for (x in 1:length(small_good)) {
   j = small_good[x]
   min = min(t_data[, j])
   for (i in 1:64) {
-    p_data[i, j] = min/t_data[i, j]
+    p_data[i, j] = min/(t_data[i, j] + 1)
   }
 }
 
@@ -95,14 +97,14 @@ colnames(p_data) = c('school', 'gp', 'wins', 'loss', 'wlp', 'srs', 'sos', 'conf_
                      'conf_loss', 'home_wins', 'home_loss', 'away_wins', 'away_loss',
                      'points_for', 'points_against', 'min_played', 'fg', 'fga', 'fgp', 
                      'thrp', 'thrpa', 'thrpp', 'ft', 'fta', 'ftp', 'orb', 'trb', 'ast', 'stl', 
-                     'blk', 'tov', 'pf')
+                     'blk', 'tov', 'pf', 'twop', 'twopa', 'twopp')
 
 # Find the index of the categories to be saved in category choices. 
 cnames = c('school', 'gp', 'wins', 'loss', 'wlp', 'srs', 'sos', 'conf_wins',
            'conf_loss', 'home_wins', 'home_loss', 'away_wins', 'away_loss',
            'points_for', 'points_against', 'min_played', 'fg', 'fga', 'fgp', 
            'thrp', 'thrpa', 'thrpp', 'ft', 'fta', 'ftp', 'orb', 'trb', 'ast', 'stl', 
-           'blk', 'tov', 'pf')
+           'blk', 'tov', 'pf', 'twop', 'twopa', 'twopp')
 save_cols = matrix(NA, nrow = 1, ncol = length(cat_choose) + 1)
 save_cols[1] = which(cnames == 'school')
 for (x in 1:length(cat_choose)) {
@@ -182,7 +184,3 @@ bracket[2, 6] = game_sim(bracket[2, 5], bracket[4, 5])
 
 # Championship
 bracket[1, 7] = game_sim(bracket[1, 6], bracket[2, 6])
-
-
-
-
